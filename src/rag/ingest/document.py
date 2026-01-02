@@ -10,7 +10,7 @@ _num_re = re.compile(r"[-+]?[\d,.]+%?|\(\d[\d,.]*\)")
 
 class Document:
     def __init__(self, table: Dict, paragraphs: List, questions: List):
-        self.id = uuid.uuid1()
+        self.id = str(uuid.uuid4())
         self.table = table
         self.paragraphs = paragraphs
         self.questions = questions
