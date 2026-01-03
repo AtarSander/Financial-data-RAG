@@ -1,0 +1,22 @@
+You are a helpful assistant. Answer using only the context.
+
+Question:
+{{ question }}
+
+{% if table_chunks %}
+Table context:
+{% for c in table_chunks %}
+- {{ c }}
+{% endfor %}
+{% endif %}
+
+{% if text_chunks %}
+Text context:
+{% for c in text_chunks %}
+- {{ c }}
+{% endfor %}
+{% endif %}
+
+Rules:
+- If the answer isn't in context, say you don't know.
+- Cite sources like [T:row_start-row_end] or [P:order].
