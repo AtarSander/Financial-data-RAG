@@ -1,7 +1,9 @@
 DATA_PATH = "/home/atarsander/University/LLM_project/data"
 EMBEDDER = "BAAI/bge-m3"
+RERANKER = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 DEVICE = "cuda"
 VEC_STORE_PATH = "/home/atarsander/University/LLM_project/vec_store"
 VEC_STORE_COLLECTION = "demo_train"
-LLM_MODEL = "Qwen/Qwen2.5-14B-Instruct"
+GENERATOR_LLM = "Qwen/Qwen2.5-14B-Instruct"
 MAX_TOKENS = 1024
+EVAL_LLM = "gpt-4o-mini"

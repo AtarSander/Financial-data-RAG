@@ -1,7 +1,7 @@
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
-from rag.config import LLM_MODEL, MAX_TOKENS
+from rag.config import GENERATOR_LLM, MAX_TOKENS
 
 
 class LLM:
@@ -13,13 +13,13 @@ class LLM:
             bnb_4bit_use_double_quant=True,
         )
         self.model = AutoModelForCausalLM.from_pretrained(
-            LLM_MODEL,
+            GENERATOR_LLM,
             dtype=torch.bfloat16,
             device_map="auto",
             quantization_config=self.quant,
             trust_remote_code=True,
         )
-        self.tokenizer = AutoTokenizer.from_pretrained(LLM_MODEL)
+        self.tokenizer = AutoTokenizer.from_pretrained(GENERATOR_LLM)
 
     def generate(
         self, question_prompt: str, system_prompt: str = "You are a helpful assistant."

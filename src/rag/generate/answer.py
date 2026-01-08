@@ -55,5 +55,5 @@ class AnswerService:
         )
         return env.get_template(prompt_file)
 
-    def close(self):
+    def __del__(self):
         self.vec_store_client.close()
