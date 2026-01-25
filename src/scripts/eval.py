@@ -23,17 +23,14 @@ def eval_rag(dataset_name, split):
     evaluator = Evaluator()
     data = Data(DATA_PATH)
     data.load_dataset(dataset_name, split)
-    test_dataset = data.get_dataset(split)[:5]
+    test_dataset = data.get_dataset(split)[:30]
     service = AnswerService()
     evaluator.load_eval_dataset(service, test_dataset)
-    print_vram()
     service.close()
     del service
-    print_vram()
     evaluator.setup_llm()
-    print_vram()
-    return evaluator.evaluate()
-    
+    return evaluator.evaluate_all()
+
 
 if __name__ == "__main__":
     result = eval_rag("tatqa_dataset_train.json", "train")
