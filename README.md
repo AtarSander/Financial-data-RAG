@@ -18,6 +18,10 @@ Retrieval-Augmented Generation (RAG) system for question answering over financia
   - Classic retrieval metrics: Recall@k, Precision@k, MRR, nDCG
 - **Demo app**: FastAPI backend + React frontend, runnable via Docker
 
+## Dataset
+
+This project uses the [TAT-QA dataset](https://huggingface.co/datasets/next-tat/TAT-QA) and follows its structure during vector store creation and data retrieval.
+
 ## Tech stack
 
 - Python

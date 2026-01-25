@@ -1,5 +1,3 @@
-import gc
-
 import torch
 from loguru import logger
 

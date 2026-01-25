@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class RAGConfig:
+    retrival_type: str = "classic"
     embedder: str = "BAAI/bge-m3"
     top_k: int = 10
     top_n: int = 7
@@ -10,7 +11,7 @@ class RAGConfig:
     generator_llm: str = "Qwen/Qwen2.5-14B-Instruct"
     max_tokens: int = 1024
     prompt_path: str = "/home/atarsander/University/LLM_project/src/rag/prompts"
-    system_prompt: str = "zero_shot.jinja"
+    system_prompt: str = "few_shot.jinja"
     question_prompt: str = "question.jinja"
     device: str = "cuda"
 

@@ -10,7 +10,7 @@ from qdrant_client.http import models as qm
 from sentence_transformers import SentenceTransformer, CrossEncoder
 
 from rag.config import RAG_CONFIG
-from rag.ingest.chunking import Chunk, TextChunk, TableChunk
+from rag.ingest.chunking import Chunk, TextChunk, TableChunk, load_chunks_from_json
 
 
 class Retriever:
@@ -114,11 +114,11 @@ class Retriever:
 
 
 class ClassicRetriever:
-    def __init__(self, vec_store_path: str | Path, chunks):
+    def __init__(self, vec_store_path: str | Path):
         vec_store_path = Path(vec_store_path)
         self.vectorizer = joblib.load(vec_store_path / "tfidf_vectorizer.joblib")
         self.tfid_matrix = load_npz(vec_store_path / "tfidf_matrix.npz")
-        self.chunks = chunks
+        self.chunks = load_chunks_from_json(vec_store_path)
 
     def retrieve_table_and_paragraphs(
         self,
@@ -127,7 +127,6 @@ class ClassicRetriever:
         top_k: int = 7,
     ) -> Tuple[List[TableChunk], List[TextChunk]]:
         idxs, scores = self.search(query, k=top_n, return_scores=True)
-
         table_best: dict[str, tuple[float, int]] = {}
         text_best: dict[str, tuple[float, int]] = {}
 

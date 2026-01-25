@@ -146,3 +146,32 @@ def save_chunks_to_json(chunks_list: List[Chunk], store_path: str | Path) -> Non
     with filepath.open("w", encoding="utf-8") as f:
         for chunk in chunks_list:
             f.write(json.dumps(chunk.to_json()) + "\n")
+
+
+def load_chunks_from_json(store_path: str | Path):
+    chunks: List[Chunk] = []
+    filepath = Path(store_path) / "chunk_store.json"
+    with filepath.open("r", encoding="utf-8") as f:
+        for line in f:
+            data = json.loads(line)
+            if data["type"] == "table":
+                chunk = TableChunk(
+                    chunk_id=data["chunk_id"],
+                    context_id=data["context_id"],
+                    table=data["text"].split("--- "),
+                    table_uid=data["table_uuid"],
+                    row_start=data["row_start"],
+                    row_end=data["row_end"],
+                )
+            elif data["type"] == "paragraph":
+                chunk = TextChunk(
+                    chunk_id=data["chunk_id"],
+                    context_id=data["context_id"],
+                    text=data["text"],
+                    paragraph_uid=data["paragraph_uuid"],
+                    order=data["order"],
+                )
+            else:
+                continue
+            chunks.append(chunk)
+    return chunks

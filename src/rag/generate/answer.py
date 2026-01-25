@@ -6,7 +6,7 @@ import torch
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, Template
 
 from rag.generate.llm import LLM
-from rag.retrieve.retriever import Retriever
+from rag.retrieve.retriever import Retriever, ClassicRetriever
 from rag.index.vector_store import setup_vector_store
 from rag.config import VEC_STORE_CONFIG, RAG_CONFIG
 from rag.ingest.chunking import TableChunk, TextChunk
@@ -14,13 +14,20 @@ from rag.ingest.chunking import TableChunk, TextChunk
 
 class AnswerService:
     def __init__(self):
-        self.vec_store_client = setup_vector_store(
-            collection_name=VEC_STORE_CONFIG.collection
-        )
         self.llm = LLM()
-        self.retriever = Retriever(
-            client=self.vec_store_client, collection_name=VEC_STORE_CONFIG.collection
-        )
+        if RAG_CONFIG.retrival_type == "classic":
+            self.retriever = ClassicRetriever(
+                vec_store_path=VEC_STORE_CONFIG.path,
+            )
+            self.vec_store_client = None
+        else:
+            self.vec_store_client = setup_vector_store(
+                collection_name=VEC_STORE_CONFIG.collection
+            )
+            self.retriever = Retriever(
+                client=self.vec_store_client,
+                collection_name=VEC_STORE_CONFIG.collection,
+            )
 
     def answer_question(
         self, query: str
@@ -67,7 +74,8 @@ class AnswerService:
         try:
             self.llm.model.to("cpu")
             self.retriever = None
-            self.vec_store_client.close()
+            if self.vec_store_client:
+                self.vec_store_client.close()
         finally:
             self.llm = None
 
