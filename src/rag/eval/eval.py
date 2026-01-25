@@ -14,7 +14,7 @@ from transformers import (
 )
 from ragas import EvaluationDataset, SingleTurnSample, evaluate
 from ragas.run_config import RunConfig
-from ragas.metrics.collections import (
+from ragas.metrics import (
     Faithfulness,
     AnswerRelevancy,
     ContextPrecision,
