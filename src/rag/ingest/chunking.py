@@ -1,4 +1,6 @@
 import uuid
+import json
+from pathlib import Path
 from dataclasses import dataclass
 from typing import List, Dict, Any
 
@@ -44,6 +46,17 @@ class TableChunk(Chunk):
             "row_end": self.row_end,
         }
 
+    def to_json(self):
+        return {
+            "chunk_id": self.chunk_id,
+            "context_id": self.context_id,
+            "type": "table",
+            "text": "--- ".join(self.table),
+            "table_uuid": self.table_uid,
+            "row_start": self.row_start,
+            "row_end": self.row_end,
+        }
+
 
 @dataclass(frozen=True)
 class TextChunk(Chunk):
@@ -58,6 +71,16 @@ class TextChunk(Chunk):
         return {
             "chunk_id": self.chunk_id,
             "context_id": self.context_id,
+            "type": "paragraph",
+            "paragraph_uuid": self.paragraph_uid,
+            "order": self.order,
+        }
+
+    def to_json(self):
+        return {
+            "chunk_id": self.chunk_id,
+            "context_id": self.context_id,
+            "text": self.text,
             "type": "paragraph",
             "paragraph_uuid": self.paragraph_uid,
             "order": self.order,
@@ -110,9 +133,16 @@ def chunk_paragraphs(document: Document, max_len: int):
     return chunks
 
 
-def chunk_dataset(dataset: List[Document], num_rows: int, max_len: int):
-    all_chunks: List[Chunk] = []
+def chunk_dataset(dataset: List[Document], num_rows: int, max_len: int) -> List[Chunk]:
+    all_chunks = []
     for document in dataset:
         all_chunks.extend(chunk_table(document, num_rows))
         all_chunks.extend(chunk_paragraphs(document, max_len))
     return all_chunks
+
+
+def save_chunks_to_json(chunks_list: List[Chunk], store_path: str | Path) -> None:
+    filepath = Path(store_path) / "chunk_store.json"
+    with filepath.open("w", encoding="utf-8") as f:
+        for chunk in chunks_list:
+            f.write(json.dumps(chunk.to_json()) + "\n")

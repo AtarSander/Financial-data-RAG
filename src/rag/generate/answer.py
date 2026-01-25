@@ -1,42 +1,50 @@
-from typing import List
+import gc
+from typing import List, Tuple
 from pathlib import Path
 
-from jinja2 import Environment, FileSystemLoader, StrictUndefined
+import torch
+from jinja2 import Environment, FileSystemLoader, StrictUndefined, Template
 
 from rag.generate.llm import LLM
 from rag.retrieve.retriever import Retriever
 from rag.index.vector_store import setup_vector_store
-from rag.config import VEC_STORE_COLLECTION
-
-PROMPT_PATH = "/home/atarsander/University/LLM_project/src/rag/prompts"
-QUESTION_PROMPT = "question.jinja"
-SYSTEM_PROMPT = "system.jinja"
+from rag.config import VEC_STORE_CONFIG, RAG_CONFIG
+from rag.ingest.chunking import TableChunk, TextChunk
 
 
 class AnswerService:
     def __init__(self):
-        self.vec_store_client = setup_vector_store(collection_name=VEC_STORE_COLLECTION)
+        self.vec_store_client = setup_vector_store(
+            collection_name=VEC_STORE_CONFIG.collection
+        )
         self.llm = LLM()
         self.retriever = Retriever(
-            client=self.vec_store_client, collection_name=VEC_STORE_COLLECTION
+            client=self.vec_store_client, collection_name=VEC_STORE_CONFIG.collection
         )
 
-    def answer_question(self, query: str):
+    def answer_question(
+        self, query: str
+    ) -> Tuple[str, List[TableChunk], List[TextChunk]]:
         table_chunks, text_chunks = self.retriever.retrieve_table_and_paragraphs(
-            query=query
+            query=query, top_k=RAG_CONFIG.top_k, top_n=RAG_CONFIG.top_n
         )
         question = self.render_prompt(
-            template=self.load_template(QUESTION_PROMPT),
+            template=self.load_template(RAG_CONFIG.question_prompt),
             question=query,
             table_chunks=table_chunks,
             text_chunks=text_chunks,
         )
-        system = self.load_template(SYSTEM_PROMPT).render()
+
+        system = self.load_template(RAG_CONFIG.system_prompt).render()
         answer = self.llm.generate(question_prompt=question, system_prompt=system)
-        return answer
+        return answer, table_chunks, text_chunks
 
     def render_prompt(
-        self, template, question: str, table_chunks: List[str], text_chunks: List[str]
+        self,
+        template: Template,
+        question: str,
+        table_chunks: List[str],
+        text_chunks: List[str],
     ) -> str:
         return template.render(
             question=question,
@@ -44,8 +52,8 @@ class AnswerService:
             text_chunks=text_chunks,
         )
 
-    def load_template(self, prompt_file: str):
-        prompts_path = Path(PROMPT_PATH)
+    def load_template(self, prompt_file: str) -> Template:
+        prompts_path = Path(RAG_CONFIG.prompt_path)
         env = Environment(
             loader=FileSystemLoader(str(prompts_path)),
             undefined=StrictUndefined,
@@ -55,5 +63,14 @@ class AnswerService:
         )
         return env.get_template(prompt_file)
 
-    def __del__(self):
-        self.vec_store_client.close()
+    def close(self) -> None:
+        try:
+            self.llm.model.to("cpu")
+            self.retriever = None
+            self.vec_store_client.close()
+        finally:
+            self.llm = None
+
+        gc.collect()
+        torch.cuda.empty_cache()
+        torch.cuda.ipc_collect()

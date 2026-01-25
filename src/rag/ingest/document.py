@@ -9,12 +9,13 @@ _num_re = re.compile(r"[-+]?[\d,.]+%?|\(\d[\d,.]*\)")
 
 
 class Document:
-    def __init__(self, table: Dict, paragraphs: List, questions: List):
+    def __init__(self, table: Dict, paragraphs: List, questions: List, raw: Dict):
         self.id = str(uuid.uuid4())
         self.table = table
         self.paragraphs = paragraphs
         self.questions = questions
         self.rows = []
+        self.raw = raw
 
     def serialize_table(self) -> None:
 
@@ -112,6 +113,7 @@ class Data:
                 table=element["table"],
                 paragraphs=element["paragraphs"],
                 questions=element["questions"],
+                raw=element,
             )
             doc.serialize_table()
             self.datasets[split].append(doc)

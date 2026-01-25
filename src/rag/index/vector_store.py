@@ -3,12 +3,12 @@ from qdrant_client import QdrantClient
 from qdrant_client.http.models import VectorParams, Distance
 from qdrant_client.http import models as qm
 
-from rag.config import VEC_STORE_PATH
+from rag.config import VEC_STORE_CONFIG
 from rag.ingest.chunking import Chunk
 
 
 def setup_vector_store(collection_name: str) -> QdrantClient:
-    client = QdrantClient(path=VEC_STORE_PATH)
+    client = QdrantClient(path=VEC_STORE_CONFIG.path)
 
     existing = [c.name for c in client.get_collections().collections]
     if collection_name in existing:
